@@ -1,0 +1,16 @@
+name: tests & config audit
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Unit tests
+        run: python -m unittest -v
+      - name: Audit report (shown on the run's Summary page)
+        run: python netaudit.py samples -f markdown --fail-on never >> "$GITHUB_STEP_SUMMARY"
+      - name: Gate - hardened configs must have no high findings
+        run: python netaudit.py samples/cisco-hardened.cfg samples/mikrotik-hardened.rsc --fail-on high
